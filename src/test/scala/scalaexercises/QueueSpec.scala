@@ -32,21 +32,18 @@ class QueueSpec extends FreeSpec with Matchers with GeneratorDrivenPropertyCheck
       case object Insert extends Command
       case object Remove extends Command
 
+      case class State(queue: Queue[Int], nextToInsert: Int, nextToRemove: Int)
+
       forAll(Gen.listOf(Gen.oneOf(Insert, Remove))) { commandList: List[Command] =>
-        var lastInserted = 0
-        var lastRemoved = 0
-        var queue = Queue.empty[Int]
-        commandList foreach {
-          case Insert =>
-            lastInserted = lastInserted + 1
-            queue = queue.insert(lastInserted)
-          case Remove =>
-            if (lastInserted == lastRemoved) queue.head should be (None)
-            else {
-              lastRemoved = lastRemoved + 1
-              queue.head should contain (lastRemoved)
-              queue = queue.tail
-            }
+        commandList.foldLeft(State(queue = Queue.empty[Int], nextToInsert = 0, nextToRemove = 0)) {
+          case (s, Insert) =>
+            s.copy(queue = s.queue.insert(s.nextToInsert), nextToInsert = s.nextToInsert + 1)
+          case (s, Remove) if s.nextToInsert == s.nextToRemove =>
+            s.queue.head should be(None)
+            s
+          case (s, Remove) =>
+            s.queue.head should contain (s.nextToRemove)
+            s.copy(queue = s.queue.tail, nextToRemove = s.nextToRemove + 1)
         }
       }
     }
