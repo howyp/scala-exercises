@@ -23,7 +23,10 @@ object QueueBenchmark extends Bench.LocalTime {
   override lazy val reporter = ChartReporter[Double](ChartFactory.XYLine())
 
   performance of "Queue" in {
-    measure method "insert ten items into a queue" in {
+    measure method "isEmpty" in {
+      using(queues) in { q => q.isEmpty }
+    }
+    measure method "insert" in {
       using(queues) in { q =>
         q.insert(-1)
           .insert(-2)
@@ -37,7 +40,7 @@ object QueueBenchmark extends Bench.LocalTime {
           .insert(-10)
       }
     }
-    measure method "take the tail of a queue ten times" in {
+    measure method "tail" in {
       using(queues) in { q =>
         q.tail
           .tail
@@ -51,7 +54,7 @@ object QueueBenchmark extends Bench.LocalTime {
           .tail
       }
     }
-    measure method "take the tail of a queue that has already been tailed once ten times" in {
+    measure method "tail of already tailed queue" in {
       using(preTailed(queues)) in { q =>
         q.tail
           .tail
@@ -63,6 +66,11 @@ object QueueBenchmark extends Bench.LocalTime {
           .tail
           .tail
           .tail
+      }
+    }
+    measure method "head" in {
+      using(preTailed(queues)) in { q =>
+        q.head
       }
     }
   }
