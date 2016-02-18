@@ -15,7 +15,18 @@ object CountCharactersBenchmark extends Bench.LocalTime {
 
   performance of "CountCharacters" in {
     measure method "toWords" in {
-      using(Gen.range("number")(0, 99999, 67)) in { toWords }
+      using(Gen.enumeration("number")(
+        9,
+        99,
+        999,
+        9999,
+        99999,
+        999999,
+        9999999,
+        99999999,
+        999999999,
+        1999999999
+      )) in { toWords }
     }
 
   }
