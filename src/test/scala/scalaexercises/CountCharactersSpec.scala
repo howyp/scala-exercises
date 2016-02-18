@@ -14,10 +14,7 @@ class CountCharactersSpec extends WordSpec with Matchers with GeneratorDrivenPro
   }
   "toWords" should {
     "provide a solution for all numbers between 0 and 10^9" in {
-      forAll(Gen.chooseNum(0, 99999)) { n =>
-        val words = toWords(n)
-        println(n + " " + words)
-        words should not be empty }
+      forAll(Gen.chooseNum(0, 999999)) { n => toWords(n) should not be empty }
     }
     "convert single digits to words" in {
       toWords(0) should be ("zero")
@@ -76,6 +73,11 @@ class CountCharactersSpec extends WordSpec with Matchers with GeneratorDrivenPro
       toWords(10321) should be ("ten thousand three hundred twenty one")
       toWords(15678) should be ("fifteen thousand six hundred seventy eight")
       toWords(23678) should be ("twenty three thousand six hundred seventy eight")
+    }
+    "convert hundreds of thousands to words" in {
+      toWords(100000) should be ("one hundred thousand")
+      toWords(100001) should be ("one hundred thousand one")
+      toWords(394863) should be ("three hundred ninety four thousand eight hundred sixty three")
     }
   }
 }

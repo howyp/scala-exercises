@@ -73,7 +73,7 @@ object CountCharacters {
         case n if n <= millenium + 999 =>
           name + " thousand " + (singleDigit orElse doubleDigits orElse hundreds)(n - millenium)
       }
-      (1 to 99).map(n => quadrupleDigit(n * 1000, (singleDigit orElse doubleDigits)(n))).reduce(_ orElse _)
+      (1 to 999).map(n => quadrupleDigit(n * 1000, (singleDigit orElse doubleDigits orElse hundreds)(n))).reduce(_ orElse _)
     }
 
     zero orElse
