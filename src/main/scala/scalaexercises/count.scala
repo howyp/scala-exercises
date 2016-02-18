@@ -33,7 +33,7 @@ object CountCharacters {
       case 9 => "nine"
     }
 
-    val doubleDigits = {
+    val doubleDigitsAndBelow = {
       val tens: Matcher = {
         case 10                      => "ten"
         case 11                      => "eleven"
@@ -43,44 +43,44 @@ object CountCharacters {
         case 18                      => "eighteen"
         case n @ (14 | 16 | 17 | 19) => singleDigit(n - 10) + "teen"
       }
-      def doubleDigit(decade: Int, name: String): Matcher = {
-        case `decade`             => name
-        case n if n <= decade + 9 => name + " " + singleDigit(n - decade)
+      def m(decade: Int, name: String): Matcher = {
+        case n if n >= decade && n <= decade + 9 =>
+          name + singleDigit.lift(n % 10).map(" " + _).getOrElse("")
       }
+      singleDigit orElse
       tens orElse
-        doubleDigit(20, "twenty" ) orElse
-        doubleDigit(30, "thirty" ) orElse
-        doubleDigit(40, "forty"  ) orElse
-        doubleDigit(50, "fifty"  ) orElse
-        doubleDigit(60, "sixty"  ) orElse
-        doubleDigit(70, "seventy") orElse
-        doubleDigit(80, "eighty" ) orElse
-        doubleDigit(90, "ninety" )
+        m(20, "twenty" ) orElse
+        m(30, "thirty" ) orElse
+        m(40, "forty"  ) orElse
+        m(50, "fifty"  ) orElse
+        m(60, "sixty"  ) orElse
+        m(70, "seventy") orElse
+        m(80, "eighty" ) orElse
+        m(90, "ninety" )
     }
+
+    def prependSpaceOnMatch(m: Matcher)(arg: Int) = m.lift(arg).map(" " + _).getOrElse("")
 
     val hundreds: Matcher = {
-      def trebleDigit(century: Int, name: String): Matcher = {
-        case `century` => name + " hundred"
-        case n if n <= century + 99 =>
-          name + " hundred " + (singleDigit orElse doubleDigits)(n - century)
-      }
-      (1 to 9).map(n => trebleDigit(n*100, singleDigit(n))).reduce(_ orElse _)
+      case n if n > 99 && n <= 999 =>
+        singleDigit(n / 100) + " hundred" + prependSpaceOnMatch(doubleDigitsAndBelow)(n % 100)
     }
+    val tripleDigitsAndBelow = hundreds orElse doubleDigitsAndBelow
 
     val thousands: Matcher = {
-      def quadrupleDigit(millenium: Int, name: String): Matcher = {
-        case `millenium` => name + " thousand"
-        case n if n <= millenium + 999 =>
-          name + " thousand " + (singleDigit orElse doubleDigits orElse hundreds)(n - millenium)
-      }
-      (1 to 999).map(n => quadrupleDigit(n * 1000, (singleDigit orElse doubleDigits orElse hundreds)(n))).reduce(_ orElse _)
+      case n if n > 999 && n <= 999999 =>
+        tripleDigitsAndBelow(n / 1000) + " thousand" + prependSpaceOnMatch(tripleDigitsAndBelow)(n % 1000)
+    }
+    val sextupleDigitsAndBelow = thousands orElse tripleDigitsAndBelow
+
+    val millions: Matcher = {
+      case n if n > 999999 && n <= 999999999 =>
+        tripleDigitsAndBelow(n / 1000000) + " million" + prependSpaceOnMatch(sextupleDigitsAndBelow)(n % 1000000)
     }
 
-    zero orElse
-      singleDigit orElse
-      doubleDigits orElse
-      hundreds orElse
-      thousands apply i
+    def couldNotHandle(n: Int) = throw new IllegalArgumentException(s"Could not process $n")
+
+    zero orElse millions orElse thousands orElse tripleDigitsAndBelow applyOrElse (i, couldNotHandle)
   }
 
   def countCharsInWords(i: Int): Int = toWords(i).filter(_ != ' ').length

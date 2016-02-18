@@ -14,7 +14,7 @@ class CountCharactersSpec extends WordSpec with Matchers with GeneratorDrivenPro
   }
   "toWords" should {
     "provide a solution for all numbers between 0 and 10^9" in {
-      forAll(Gen.chooseNum(0, 999999)) { n => toWords(n) should not be empty }
+      forAll(Gen.chooseNum(0, 999999999)) { n => toWords(n) should not be empty }
     }
     "convert single digits to words" in {
       toWords(0) should be ("zero")
@@ -64,7 +64,7 @@ class CountCharactersSpec extends WordSpec with Matchers with GeneratorDrivenPro
       toWords(1001) should be ("one thousand one")
       toWords(1056) should be ("one thousand fifty six")
       toWords(1239) should be ("one thousand two hundred thirty nine")
-      toWords(1205) should be ("one thousand two hundred five")
+      toWords(8205) should be ("eight thousand two hundred five")
     }
     "convert tens of thousands to words" in {
       toWords(10000) should be ("ten thousand")
@@ -78,6 +78,14 @@ class CountCharactersSpec extends WordSpec with Matchers with GeneratorDrivenPro
       toWords(100000) should be ("one hundred thousand")
       toWords(100001) should be ("one hundred thousand one")
       toWords(394863) should be ("three hundred ninety four thousand eight hundred sixty three")
+    }
+    "convert millions to words" in {
+      toWords(1000000) should be ("one million")
+      toWords(1000001) should be ("one million one")
+      toWords(1111111) should be ("one million one hundred eleven thousand one hundred eleven")
+      toWords(23000001) should be ("twenty three million one")
+      toWords(23981234) should be ("twenty three million nine hundred eighty one thousand two hundred thirty four")
+      toWords(280805574) should be ("two hundred eighty million eight hundred five thousand five hundred seventy four")
     }
   }
 }
