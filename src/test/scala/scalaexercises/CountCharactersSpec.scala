@@ -87,5 +87,10 @@ class CountCharactersSpec extends WordSpec with Matchers with GeneratorDrivenPro
       toWords(23981234) should be ("twenty three million nine hundred eighty one thousand two hundred thirty four")
       toWords(280805574) should be ("two hundred eighty million eight hundred five thousand five hundred seventy four")
     }
+    "convert billions to words" in {
+      toWords(1000000000) should be ("one billion")
+      //2,147,483,647
+      toWords(Int.MaxValue) should be ("two billion one hundred forty seven million four hundred eighty three thousand six hundred forty seven")
+    }
   }
 }

@@ -77,10 +77,16 @@ object CountCharacters {
       case n if n > 999999 && n <= 999999999 =>
         tripleDigitsAndBelow(n / 1000000) + " million" + prependSpaceOnMatch(sextupleDigitsAndBelow)(n % 1000000)
     }
+    val nonupletDigitsAndBelow = millions orElse sextupleDigitsAndBelow
+
+    val billions: Matcher = {
+      case n if n > 999999999 && n <= Int.MaxValue =>
+        tripleDigitsAndBelow(n / 1000000000) + " billion" + prependSpaceOnMatch(nonupletDigitsAndBelow)(n % 1000000000)
+    }
 
     def couldNotHandle(n: Int) = throw new IllegalArgumentException(s"Could not process $n")
 
-    zero orElse millions orElse thousands orElse tripleDigitsAndBelow applyOrElse (i, couldNotHandle)
+    zero orElse billions orElse millions orElse thousands orElse tripleDigitsAndBelow applyOrElse (i, couldNotHandle)
   }
 
   def countCharsInWords(i: Int): Int = toWords(i).filter(_ != ' ').length
