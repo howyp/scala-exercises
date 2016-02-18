@@ -9,12 +9,15 @@ import scalaexercises.CountCharacters._
 class CountCharactersSpec extends WordSpec with Matchers with GeneratorDrivenPropertyChecks {
   "countCharsInWords" should {
     "convert 9 into 4"    in { countCharsInWords(9) should be (4)}
-//    "convert 99 into 10"  in { countCharsInWords(99) should be (10)}
-//    "convert 999 into 21" in { countCharsInWords(999) should be (21)}
+    "convert 99 into 10"  in { countCharsInWords(99) should be (10)}
+    "convert 999 into 21" in { countCharsInWords(999) should be (21)}
   }
   "toWords" should {
     "provide a solution for all numbers between 0 and 10^9" in {
-      forAll(Gen.chooseNum(0, 99)) { toWords(_) should not be (empty) }
+      forAll(Gen.chooseNum(0, 99999)) { n =>
+        val words = toWords(n)
+        println(n + " " + words)
+        words should not be empty }
     }
     "convert single digits to words" in {
       toWords(0) should be ("zero")
@@ -45,12 +48,34 @@ class CountCharactersSpec extends WordSpec with Matchers with GeneratorDrivenPro
       toWords(21) should be ("twenty one")
       toWords(29) should be ("twenty nine")
       toWords(31) should be ("thirty one")
-      toWords(41) should be ("fourty one")
+      toWords(41) should be ("forty one")
       toWords(51) should be ("fifty one")
       toWords(61) should be ("sixty one")
       toWords(71) should be ("seventy one")
       toWords(81) should be ("eighty one")
       toWords(91) should be ("ninety one")
+    }
+    "convert hundreds to words" in {
+      toWords(100) should be ("one hundred")
+      toWords(101) should be ("one hundred one")
+      toWords(131) should be ("one hundred thirty one")
+      toWords(248) should be ("two hundred forty eight")
+      toWords(523) should be ("five hundred twenty three")
+    }
+    "convert thousands to words" in {
+      toWords(1000) should be ("one thousand")
+      toWords(1001) should be ("one thousand one")
+      toWords(1056) should be ("one thousand fifty six")
+      toWords(1239) should be ("one thousand two hundred thirty nine")
+      toWords(1205) should be ("one thousand two hundred five")
+    }
+    "convert tens of thousands to words" in {
+      toWords(10000) should be ("ten thousand")
+      toWords(10001) should be ("ten thousand one")
+      toWords(10021) should be ("ten thousand twenty one")
+      toWords(10321) should be ("ten thousand three hundred twenty one")
+      toWords(15678) should be ("fifteen thousand six hundred seventy eight")
+      toWords(23678) should be ("twenty three thousand six hundred seventy eight")
     }
   }
 }

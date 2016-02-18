@@ -16,6 +16,11 @@ object CountCharacters {
   */
   def toWords(i: Int): String = {
     type Matcher = PartialFunction[Int, String]
+
+    val zero: Matcher = {
+      case 0 => "zero"
+    }
+
     val singleDigit: Matcher = {
       case 1 => "one"
       case 2 => "two"
@@ -26,9 +31,6 @@ object CountCharacters {
       case 7 => "seven"
       case 8 => "eight"
       case 9 => "nine"
-    }
-    val zero: Matcher = {
-      case 0 => "zero"
     }
 
     val doubleDigits = {
@@ -42,13 +44,13 @@ object CountCharacters {
         case n @ (14 | 16 | 17 | 19) => singleDigit(n - 10) + "teen"
       }
       def doubleDigit(decade: Int, name: String): Matcher = {
-        case `decade`              => name
-        case n if n <= decade + 10 => name + " " + toWords(n - decade)
+        case `decade`             => name
+        case n if n <= decade + 9 => name + " " + singleDigit(n - decade)
       }
       tens orElse
         doubleDigit(20, "twenty" ) orElse
         doubleDigit(30, "thirty" ) orElse
-        doubleDigit(40, "fourty" ) orElse
+        doubleDigit(40, "forty"  ) orElse
         doubleDigit(50, "fifty"  ) orElse
         doubleDigit(60, "sixty"  ) orElse
         doubleDigit(70, "seventy") orElse
@@ -56,12 +58,31 @@ object CountCharacters {
         doubleDigit(90, "ninety" )
     }
 
-    zero orElse singleDigit orElse doubleDigits apply i
+    val hundreds: Matcher = {
+      def trebleDigit(century: Int, name: String): Matcher = {
+        case `century` => name + " hundred"
+        case n if n <= century + 99 =>
+          name + " hundred " + (singleDigit orElse doubleDigits)(n - century)
+      }
+      (1 to 9).map(n => trebleDigit(n*100, singleDigit(n))).reduce(_ orElse _)
+    }
+
+    val thousands: Matcher = {
+      def quadrupleDigit(millenium: Int, name: String): Matcher = {
+        case `millenium` => name + " thousand"
+        case n if n <= millenium + 999 =>
+          name + " thousand " + (singleDigit orElse doubleDigits orElse hundreds)(n - millenium)
+      }
+      (1 to 99).map(n => quadrupleDigit(n * 1000, (singleDigit orElse doubleDigits)(n))).reduce(_ orElse _)
+    }
+
+    zero orElse
+      singleDigit orElse
+      doubleDigits orElse
+      hundreds orElse
+      thousands apply i
   }
 
-  // countCharsInWords(9) == 4
-  // countCharsInWords(99) == 10
-  // countCharsInWords(999) == 21
   def countCharsInWords(i: Int): Int = toWords(i).filter(_ != ' ').length
 
   /*
