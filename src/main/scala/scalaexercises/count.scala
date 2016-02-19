@@ -2,13 +2,8 @@ package scalaexercises
 
 object CountCharacters {
   /*
-    We want to produce a function that counts the number of chars in an English language spelling of a number.
-    The top-level function countCharsInWords is provided for you.
-
-    Part 1) Implement the toWords function
-
     Returns i as spelled in english (without commas, "and"s etc)
-    Assume US notation, ie billion = 10^9
+    Uses US notation, ie billion = 10^9
     eg.
      toWords(9) = "nine"
      toWords(99) = "ninety nine"
@@ -89,14 +84,13 @@ object CountCharacters {
     zero orElse billions orElse millions orElse thousands orElse tripleDigitsAndBelow applyOrElse (i, couldNotHandle)
   }
 
+  /*
+    Counts the number of chars in an English language spelling of a number.
+   */
   def countCharsInWords(i: Int): Int = toWords(i).filter(_ != ' ').length
 
   /*
-    Part 2) Implement the countCharsInWordsOptimised function
-
-    This should be a more efficient implementation of countCharsInWords.
-    This does not need to re-use the above and may be an entirely different algorithm.
-    Try to make this implementation as efficient as you can
+    A more efficient implementation of countCharsInWords.
   */
   def countCharsInWordsOptimised(i: Int): Int = {
     type Matcher = PartialFunction[Int, Int]
