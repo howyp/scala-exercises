@@ -33,6 +33,8 @@ object CountCharacters {
       case 9 => "nine"
     }
 
+    def prependSpaceOnMatch(m: Matcher)(arg: Int) = m.lift(arg).map(" " + _).getOrElse("")
+
     val doubleDigitsAndBelow = {
       val tens: Matcher = {
         case 10                      => "ten"
@@ -45,7 +47,7 @@ object CountCharacters {
       }
       def m(decade: Int, name: String): Matcher = {
         case n if n >= decade && n <= decade + 9 =>
-          name + singleDigit.lift(n % 10).map(" " + _).getOrElse("")
+          name + prependSpaceOnMatch(singleDigit)(n % 10)
       }
       singleDigit orElse
       tens orElse
@@ -58,8 +60,6 @@ object CountCharacters {
         m(80, "eighty" ) orElse
         m(90, "ninety" )
     }
-
-    def prependSpaceOnMatch(m: Matcher)(arg: Int) = m.lift(arg).map(" " + _).getOrElse("")
 
     val hundreds: Matcher = {
       case n if n > 99 && n <= 999 =>
@@ -98,5 +98,77 @@ object CountCharacters {
     This does not need to re-use the above and may be an entirely different algorithm.
     Try to make this implementation as efficient as you can
   */
-  def countCharsInWordsOptimised(i: Int): Int = ???
+  def countCharsInWordsOptimised(i: Int): Int = {
+    type Matcher = PartialFunction[Int, Int]
+
+    val zero: Matcher = {
+      case 0 => 4
+    }
+
+    val singleDigit: Matcher = {
+      case 1 => 3
+      case 2 => 3
+      case 3 => 5
+      case 4 => 4
+      case 5 => 4
+      case 6 => 3
+      case 7 => 5
+      case 8 => 5
+      case 9 => 4
+    }
+
+    val doubleDigitsAndBelow = {
+      val tens: Matcher = {
+        case 10                      => 3
+        case 11                      => 6
+        case 12                      => 6
+        case 13                      => 8
+        case 15                      => 7
+        case 18                      => 8
+        case n @ (14 | 16 | 17 | 19) => singleDigit(n - 10) + 4
+      }
+      def m(decade: Int, name: Int): Matcher = {
+        case n if n >= decade && n <= decade + 9 =>
+          name + singleDigit.applyOrElse(n % 10, (_: Int) => 0)
+      }
+      singleDigit orElse
+        tens orElse
+        m(20, 6) orElse
+        m(30, 6) orElse
+        m(40, 5) orElse
+        m(50, 5) orElse
+        m(60, 5) orElse
+        m(70, 7) orElse
+        m(80, 6) orElse
+        m(90, 6)
+    }
+
+
+    val hundreds: Matcher = {
+      case n if n > 99 && n <= 999 =>
+        singleDigit(n / 100) + 7 + doubleDigitsAndBelow.applyOrElse(n % 100, (_: Int) => 0)
+    }
+    val tripleDigitsAndBelow = hundreds orElse doubleDigitsAndBelow
+
+    val thousands: Matcher = {
+      case n if n > 999 && n <= 999999 =>
+        tripleDigitsAndBelow(n / 1000) + 8 + tripleDigitsAndBelow.applyOrElse(n % 1000, (_: Int) => 0)
+    }
+    val sextupleDigitsAndBelow = thousands orElse tripleDigitsAndBelow
+
+    val millions: Matcher = {
+      case n if n > 999999 && n <= 999999999 =>
+        tripleDigitsAndBelow(n / 1000000) + 7 + sextupleDigitsAndBelow.applyOrElse(n % 1000000, (_: Int) => 0)
+    }
+    val nonupletDigitsAndBelow = millions orElse sextupleDigitsAndBelow
+
+    val billions: Matcher = {
+      case n if n > 999999999 && n <= Int.MaxValue =>
+        tripleDigitsAndBelow(n / 1000000000) + 7 + nonupletDigitsAndBelow.applyOrElse(n % 1000000000, (_: Int) => 0)
+    }
+
+    def couldNotHandle(n: Int) = throw new IllegalArgumentException(s"Could not process $n")
+
+    zero orElse billions orElse millions orElse thousands orElse tripleDigitsAndBelow applyOrElse (i, couldNotHandle)
+  }
 }

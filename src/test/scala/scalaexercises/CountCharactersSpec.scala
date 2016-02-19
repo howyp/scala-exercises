@@ -14,7 +14,7 @@ class CountCharactersSpec extends WordSpec with Matchers with GeneratorDrivenPro
   }
   "toWords" should {
     "provide a solution for all numbers between 0 and 10^9" in {
-      forAll(Gen.chooseNum(0, 999999999)) { n => toWords(n) should not be empty }
+      forAll(Gen.chooseNum(0, Int.MaxValue)) { n => toWords(n) should not be empty }
     }
     "convert single digits to words" in {
       toWords(0) should be ("zero")
@@ -91,6 +91,11 @@ class CountCharactersSpec extends WordSpec with Matchers with GeneratorDrivenPro
       toWords(1000000000) should be ("one billion")
       //2,147,483,647
       toWords(Int.MaxValue) should be ("two billion one hundred forty seven million four hundred eighty three thousand six hundred forty seven")
+    }
+  }
+  "countCharsInWordsOptimised" should {
+    "produce the same value as countCharsInWords" in {
+      forAll(Gen.chooseNum(0, Int.MaxValue)) { n => countCharsInWordsOptimised(n) should be (countCharsInWords(n)) }
     }
   }
 }
